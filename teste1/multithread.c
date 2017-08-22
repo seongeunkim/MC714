@@ -26,7 +26,7 @@ int random_number() {
 
 void* fill_and_mean(void *args) {
 
-	int sum = 0;
+	long long int sum = 0;
 	struct array_info *ptr = args;
 
 	for(long long int i = ptr->initial_pos; i < ptr->final_pos; i++) {
