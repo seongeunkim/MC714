@@ -19,8 +19,6 @@ struct array_info {
 // generates random number from 0 to 1000
 int random_number() {
 
-	srand(time(NULL)); // initializes random number generator
-
 	return rand()%1001;
 }
 
@@ -28,6 +26,8 @@ void* fill_and_mean(void *args) {
 
 	long long int sum = 0;
 	struct array_info *ptr = args;
+
+	srand(time(NULL)); // initializes random number generator
 
 	for(long long int i = ptr->initial_pos; i < ptr->final_pos; i++) {
 		ptr->array[i] = random_number();
@@ -51,30 +51,27 @@ int main(int argc, char *argv[]) {
 	ptr = malloc(k * sizeof(struct array_info));
 	// alocacao de N * 2^20 inteiros de 64 bits
 	array = (long long int*)malloc((N*_CONST_) * sizeof(long long int));
+
 	for(int i = 0; i < k; i++) {
 		ptr[i].array = array;
 		ptr[i].sum = 0;
-	}
-
-	for(int i = 0; i < k; i++) {
 		ptr[i].initial_pos = (long long int)i*N*_CONST_/k;
 		ptr[i].final_pos = (long long int)N*_CONST_*(i+1)/k;
 		if(i == k-1) {
-			ptr[i].final_pos = N*_CONST_;
+			ptr[i].final_pos = (long long int)N*_CONST_;
 		}
 		pthread_create(&(tid[i]), NULL, fill_and_mean, &ptr[i]);
 	}
 
 	for(int i = 0; i < k; i++) {
 		pthread_join(tid[i], NULL);
-	}
-
-	for(int i = 0; i < k; i++) {
 		sum += ptr[i].sum;
 	}
 
 	printf("%lld\n", sum/(N*_CONST_));
 
 	free(ptr->array);
+	free(tid);
+	free(ptr);
 
 }

@@ -8,14 +8,14 @@
 // generates random number from 0 to 1000
 int random_number() {
 
-	srand(time(NULL)); // initializes random number generator
-
 	return rand()%1001;
 }
 
 int fill_and_mean(long long int array[], long long int size) {
 
 	long long int sum = 0;
+
+	srand(time(NULL)); // initializes random number generator
 
 	for(long long int i = 0; i < size; i++) {
 		array[i] = random_number();

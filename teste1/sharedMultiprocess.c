@@ -11,13 +11,13 @@
 // generates random number from 0 to 1000
 int random_number() {
 
-	srand(time(NULL)); // initializes random number generator
-
 	return rand()%1001;
 }
 
 void fill_and_mean(int id, long long int *array, long long int *sum, long long int initial_pos, long long int final_pos) {
 	long long int curr_sum = 0;
+
+	srand(time(NULL)); // initializes random number generator
 
 	for(long long int i = initial_pos; i < final_pos; i++) {
 		array[i] = random_number();
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 	void *array_ptr = mmap(0, N * _CONST_ * 8, PROT_READ | PROT_WRITE, MAP_SHARED, array_mem, 0);
 	long long int *array_ptr_util = (long long int *)array_ptr;
 
-	// sharing the array that will be filled with the random numbers
+	// sharing the array that will be filled with the sums
 	const char *sum_mem_name = "sum_mem_share";
 	int sum_mem = shm_open(sum_mem_name, O_CREAT | O_RDWR, 0666);
 	ftruncate(sum_mem, k); // memory size is N*2^20 of 64bit int
