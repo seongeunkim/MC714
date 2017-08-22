@@ -1,3 +1,16 @@
+/**
+-------------------------------------
+Disciplina: MC714 - 2 semestre 2017
+Professor: Lucas Wanner
+
+Nome: Seong Eun Kim
+RA: 177143
+
+Descricao: Versao multiprocessos
+-------------------------------------
+**/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -44,7 +57,7 @@ int main(int argc, char *argv[]) {
 	// sharing the array that will be filled with the sums
 	const char *sum_mem_name = "sum_mem_share";
 	int sum_mem = shm_open(sum_mem_name, O_CREAT | O_RDWR, 0666);
-	ftruncate(sum_mem, k); // memory size is N*2^20 of 64bit int
+	ftruncate(sum_mem, k);
 	void *sum_ptr = mmap(0, k, PROT_READ | PROT_WRITE, MAP_SHARED, sum_mem, 0);
 	long long int *sum_ptr_util = (long long int *) sum_ptr;
 
@@ -54,8 +67,8 @@ int main(int argc, char *argv[]) {
 		pid[i] = fork();
 
 		if (pid[i] == 0) { //son
-			long long int initial_pos = (long long int)i*N*_CONST_/k;
-			long long int final_pos = (long long int)N*_CONST_*(i+1)/k;
+			long long int initial_pos = (long long int)i*N*_CONST_/k; // initial index of the subarray
+			long long int final_pos = (long long int)N*_CONST_*(i+1)/k; // final index of the subarray
 			if(i == k-1) {
 				final_pos = N*_CONST_;
 			}
@@ -70,7 +83,7 @@ int main(int argc, char *argv[]) {
 
 	for(int i = 0; i < k; i++) {
 		if(pid[i] > 0) {
-			waitpid(pid[i], &status, 0);
+			waitpid(pid[i], &status, 0); // waits for each process to end
 			sum += sum_ptr_util[i];
 		}
 	}

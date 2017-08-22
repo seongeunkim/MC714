@@ -1,3 +1,16 @@
+/**
+-------------------------------------
+Disciplina: MC714 - 2 semestre 2017
+Professor: Lucas Wanner
+
+Nome: Seong Eun Kim
+RA: 177143
+
+Descricao: Versao sequencial
+-------------------------------------
+**/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -18,8 +31,8 @@ int fill_and_mean(long long int array[], long long int size) {
 	srand(time(NULL)); // initializes random number generator
 
 	for(long long int i = 0; i < size; i++) {
-		array[i] = random_number();
-		sum += array[i];
+		array[i] = random_number(); // fill array
+		sum += array[i]; // gets sum of its elements
 	}
 	return sum/size;
 }

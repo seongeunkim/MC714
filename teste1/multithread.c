@@ -1,3 +1,16 @@
+/**
+-------------------------------------
+Disciplina: MC714 - 2 semestre 2017
+Professor: Lucas Wanner
+
+Nome: Seong Eun Kim
+RA: 177143
+
+Descricao: Versao multithread
+-------------------------------------
+**/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -30,7 +43,7 @@ void* fill_and_mean(void *args) {
 	srand(time(NULL)); // initializes random number generator
 
 	for(long long int i = ptr->initial_pos; i < ptr->final_pos; i++) {
-		ptr->array[i] = random_number();
+		ptr->array[i] = random_number(); // fill array
 		sum += ptr->array[i];
 	}
 	ptr->sum += sum;
@@ -49,14 +62,15 @@ int main(int argc, char *argv[]) {
 	tid = malloc(k * sizeof(pthread_t));
 
 	ptr = malloc(k * sizeof(struct array_info));
+
 	// alocacao de N * 2^20 inteiros de 64 bits
 	array = (long long int*)malloc((N*_CONST_) * sizeof(long long int));
 
-	for(int i = 0; i < k; i++) {
-		ptr[i].array = array;
-		ptr[i].sum = 0;
-		ptr[i].initial_pos = (long long int)i*N*_CONST_/k;
-		ptr[i].final_pos = (long long int)N*_CONST_*(i+1)/k;
+	for(int i = 0; i < k; i++) { 
+		ptr[i].array = array; // each thread has a pointer to the array to be filled
+		ptr[i].sum = 0; // each thread gets the sum of the elements of the subarrat
+		ptr[i].initial_pos = (long long int)i*N*_CONST_/k; // initial index of the subarray
+		ptr[i].final_pos = (long long int)N*_CONST_*(i+1)/k; // final index of the subarray - 1
 		if(i == k-1) {
 			ptr[i].final_pos = (long long int)N*_CONST_;
 		}
@@ -64,8 +78,8 @@ int main(int argc, char *argv[]) {
 	}
 
 	for(int i = 0; i < k; i++) {
-		pthread_join(tid[i], NULL);
-		sum += ptr[i].sum;
+		pthread_join(tid[i], NULL); // waits for all threads to execute
+		sum += ptr[i].sum; // calculates the sum of the sums of the subarrays
 	}
 
 	printf("%lld\n", sum/(N*_CONST_));
