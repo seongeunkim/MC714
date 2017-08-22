@@ -13,7 +13,7 @@ int random_number() {
 	return rand()%1001;
 }
 
-void fill_and_mean(long long int array[], long long int size) {
+int fill_and_mean(long long int array[], long long int size) {
 
 	long long int sum = 0;
 

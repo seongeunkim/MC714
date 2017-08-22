@@ -8,8 +8,6 @@
 
 #define _CONST_ 1048576  // constant to multiply N
 
-//#define _CONST_ 20  // constant to multiply N
-
 // generates random number from 0 to 1000
 int random_number() {
 
@@ -24,10 +22,8 @@ void fill_and_mean(int id, long long int *array, long long int *sum, long long i
 	for(long long int i = initial_pos; i < final_pos; i++) {
 		array[i] = random_number();
 		curr_sum += array[i];
-		//printf("##%lld##", array[i]);
 	}
 	sum[id] = curr_sum;
-	//printf("\n");
 }
 
 

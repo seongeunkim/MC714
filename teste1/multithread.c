@@ -32,10 +32,8 @@ void* fill_and_mean(void *args) {
 	for(long long int i = ptr->initial_pos; i < ptr->final_pos; i++) {
 		ptr->array[i] = random_number();
 		sum += ptr->array[i];
-		//printf("-%d %lld -", i, ptr->array[i]);
 	}
 	ptr->sum += sum;
-	//printf("\n");
 	pthread_exit(NULL);
 }
 
@@ -61,7 +59,6 @@ int main(int argc, char *argv[]) {
 	for(int i = 0; i < k; i++) {
 		ptr[i].initial_pos = (long long int)i*N*_CONST_/k;
 		ptr[i].final_pos = (long long int)N*_CONST_*(i+1)/k;
-		//printf("ini %lld final %lld\n", ptr[i].initial_pos, ptr[i].final_pos);
 		if(i == k-1) {
 			ptr[i].final_pos = N*_CONST_;
 		}
