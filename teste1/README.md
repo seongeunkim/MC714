@@ -21,6 +21,7 @@ time ./sharedMultiprocess 64 4
 ```
 
 Para melhor avaliarmos o desempenho do multithreading e do multiprocessing, construímos um gráfico do tempo de processamento pelo número de processos e threads.
+
 | ![alt](https://github.com/seongeunkim/MC714/blob/master/teste1/grafico.png) |
 |:--:| 
 | *Gráfico do número de threads/processos pelo tempo de processamento em segundos* |
