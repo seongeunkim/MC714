@@ -22,12 +22,12 @@ time ./sharedMultiprocess 64 4
 
 Para melhor avaliarmos o desempenho do multithreading e do multiprocessing, construímos um gráfico do tempo de processamento pelo número de processos e threads.
 
-| ![alt](https://github.com/seongeunkim/MC714/blob/master/teste1/grafico.png) |
-|:--:| 
+| ![alt](/Users/seongeunkim/Dropbox (Personal)/MC714/teste1) |
+|:--:|
 | *Gráfico do número de threads/processos pelo tempo de processamento em segundos* |
 
 ### Análise
-Com os valores obtidos na execução do programa, pudemos comparar o tempo real de processamento e ver que a versão multiprocesso possui maior desempenho, seguida pela versão multithread e, por fim, a versão sequencial. 
+Com os valores obtidos na execução do programa, pudemos comparar o tempo real de processamento e ver que a versão multiprocesso possui maior desempenho, seguida pela versão multithread e, por fim, a versão sequencial.
 
 Pelo gráfico, podemos observar que quanto o maior número de processos e threads (_k_), menor o tempo de execução, pois o problema é altamente paralelizável. Vemos, também, que há uma maior queda no tempo de processamento de _k=2_ para _k=4_ em relação às demais variações de _k_. Isso se deve possivelmente pois há uma queda de eficiência na troca dentro dos processadores lógicos.
 
