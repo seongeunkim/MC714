@@ -33,6 +33,7 @@ class NoDeFofoca():
 		self.server()
 		client_thread.join()
 
+
 	def server(self):
 		
 		context = zmq.Context()
@@ -60,7 +61,7 @@ class NoDeFofoca():
 					print ("SERVER %d SENDING STOP MESSAGE" % self.port_number)
 					s.send("stop")
 					print ("$$$$$$$$$$$$$$$$$$")
-					time.sleep(2)
+					time.sleep(1)
 			except zmq.Again as e:
 				pass
 		print ("%d saiu do while server porra " % self.port_number)
@@ -70,12 +71,14 @@ class NoDeFofoca():
 
 		print ("Start of client ! id = %d" % self.port_number)
 		context = zmq.Context()
-		s1 = context.socket(zmq.REQ)
+		
 		#s1.RCVTIMEO = 10000
 
 		time.sleep(1)
 		while self.exit == 0:
 			if self.info != "":
+				s1 = context.socket(zmq.REQ)
+
 				# randomly picks a port
 				port = list(range(starting_port, starting_port + num_processes))
 				port.remove(self.port_number)
@@ -86,25 +89,24 @@ class NoDeFofoca():
 
 				php = "tcp://%s:%s" % (HOST, port)
 				
-
 				s1.connect(php)
-				print ("%d SENDING a message to %d!!!! Message = %s" % (self.port_number, port, self.info))
+				print ("%d SENDING a message to %s!!!! Message = %s" % (self.port_number, php, self.info))
 				s1.send(self.info)
 				print "before recv of client"
-				try:
+				#try:
 					#message = s1.recv(flags=zmq.NOBLOCK)
-					message = s1.recv()
-					print ("Client of id %d received a message %s" % (self.port_number, message))
-					if not "thank you" in message:
-						print("it knew it\n")
-						print("I am %d and I stopped" % self.port_number)
-						self.exit = 1
-						break
-					else:
-						print("it didnt know it\n")
+				message = s1.recv()
+				print ("Client of id %d received a message %s" % (self.port_number, message))
+				if not "thank you" in message:
+					print("it knew it\n")
+					print("I am %d and I stopped" % self.port_number)
+					self.exit = 1
+					break
+				else:
+					print("it didnt know it\n")
 
-				except zmq.Again as e:
-					pass
+				#except zmq.Again as e:
+				#	pass
 
 				#print("I know nothing and I am %d" % self.port_number)
 
