@@ -1,6 +1,6 @@
 import zmq
 import random
-from multiprocessing import Array
+from multiprocessing import Array, Manager, Value
 from multiprocessing import Process
 import threading
 from threading import Thread
@@ -9,9 +9,9 @@ from ctypes import Structure, c_int
 
 starting_port = 5000
 HOST = "127.0.0.1"
-num_processes = 400
+num_processes = 10
 libera_o_portao = 0
-k = 10
+k = 8
 
 # creates a struct with the values
 class Values(Structure):
@@ -21,30 +21,32 @@ class Values(Structure):
 
 class NoDeFofoca():
 
-	def __init__(self, port_number, value_array):
+	def __init__(self, port_number, value_array, gossip_starting_time):
 
 		self.port_number = port_number
+
 		self.exit = 0
+
 
 		self.hasinfo = 0
 		self.attempts = 0
 		self.successes = 0
 
-		
-		#print (self.port_number)
 
-		# only the first process has the message
-		if self.port_number != starting_port:
+		# only the last process has the message
+		if self.port_number != (starting_port + num_processes - 1):
+			gossip_starting_time.value = time.time()
 			self.info = ""
 		else:
+			#gossip_starting_time.value = time.time()
 			self.info = "what am i doing"
+			self.hasinfo = 1
 
 		client_thread = threading.Thread(target=self.client)
 		client_thread.start()
 		self.server()
-		#print("----> %d servers acabaram." % self.port_number)
 		client_thread.join()
-		#print("----> %d clients acabaram." % self.port_number)
+
 		index = self.port_number - starting_port
 		value_array[index].port_number = self.port_number
 		value_array[index].hasinfo = self.hasinfo
@@ -63,8 +65,9 @@ class NoDeFofoca():
 		s.RCVTIMEO = 10000
 		s.bind(p)
 
-		server_timer = time.time()
-		while self.exit == 0 and (time.time()-server_timer < 15):
+		while (time.time()-gossip_starting_time.value < 40):
+
+		#while (time.time()-gossip_starting_time.value < 12):
 			try:
 				#print ("before recv of server %d" % self.port_number)
 				#message = s.recv(flags=zmq.NOBLOCK)
@@ -72,17 +75,15 @@ class NoDeFofoca():
 				#print ("after recv of server %d" % self.port_number)
 				#print ("%d RECEIVED a message!!!! Message = %s" % (self.port_number, message))
 				if message != self.info:
-					#print ("%d RECEIVED a NEW message!" % (self.port_number))
+					print ("%d RECEIVED a NEW message!" % (self.port_number))
 					self.hasinfo = 1
-					#print ("%d" % self.info)
 					s.send("thank you")
 					self.info = message
-					#print "message: %s" % self.info
 				else:
 					#print ("SERVER %d SENDING STOP MESSAGE" % self.port_number)
 					s.send("stop")
 					#print ("$$$$$$$$$$$$$$$$$$")
-					time.sleep(1)
+					#time.sleep(1)
 			except zmq.Again as e:
 				pass
 		#print ("%d saiu do while server porra " % self.port_number)
@@ -93,42 +94,38 @@ class NoDeFofoca():
 		#print ("Start of client ! id = %d" % self.port_number)
 		context = zmq.Context()
 		context.setsockopt(zmq.LINGER, 100)
-
-		time.sleep(1)
+		
 		client_timer = time.time()
 		s1 = context.socket(zmq.REQ)
-		while self.exit == 0 and (time.time()-client_timer < 15):
+		while (self.exit == 0 and time.time()-gossip_starting_time.value < 40):
+		#while (time.time()-gossip_starting_time.value < 12):
 			if self.info != "":
 				s1 = context.socket(zmq.REQ)
-				s1.RCVTIMEO = 10000
-				s1.SNDTIMEO = 10000
+				#s1.RCVTIMEO = 10000
+				#s1.SNDTIMEO = 10000
+
 				# randomly picks a port
 				port = list(range(starting_port, starting_port + num_processes))
 				port.remove(self.port_number)
 				port = random.choice(port)
-				#port = 4444
 
 				self.attempts += 1
 				#print "meu id %d e a porta %d" % (self.port_number, port)
 
 				php = "tcp://%s:%s" % (HOST, port)
-				#print("*******************************")
+				t = time.time()-client_timer
 				s1.connect(php)
 				#print ("%d SENDING a message to %s!!!!" % (self.port_number, php))
 				try:
 					s1.send(self.info, zmq.NOBLOCK)
-					#print "before recv of client"
-				#try:
 					#message = s1.recv(flags=zmq.NOBLOCK)
 					message = s1.recv()
 					#print ("Client of id %d received a message %s" % (self.port_number, message))
 					if not "thank you" in message:
-						#print("it knew it\n")
 						# stops with a probability of 1 of k
 						prob = random.randrange(1,k+1)
-						#print("---PROB: %d---" % prob)
 						if(prob == 1):
-							#print("I am %d and I stopped" % self.port_number)
+							print("%f: I am %d and I stopped" % (time.time()-gossip_starting_time.value, self.port_number))
 							self.exit = 1
 							break
 						else:
@@ -139,11 +136,10 @@ class NoDeFofoca():
 						self.successes += 1
 						#print("it didnt know it\n")
 				except:
-					#print("%d MESSAGE TO %d FAILED!!!!!!" % (self.port_number, port))
+					#print("time %f: %d MESSAGE TO %d FAILED!!!!!!" % (t, self.port_number, port))
 					pass
 
-				#except zmq.Again as e:
-				#	pass
+				time.sleep(2)
 
 				#print("I know nothing and I am %d" % self.port_number)
 
@@ -184,7 +180,7 @@ def get_mean(value_array):
 	for a in value_array:
 		sum += a.attempts
 
-	return (sum/num_processes)
+	return float(sum)/num_processes
 
 def calculate_success(value_array):
 
@@ -214,10 +210,13 @@ if __name__ == '__main__':
 	#pool = Pool()
 	value_array = Array(Values, num_processes, lock = True)
 
-	initial_time = time.time()
+	manager = Manager()
+	gossip_starting_time = manager.Value('d', time.time()+100)
+
+	#initial_time = time.time()
 
 	for i in range(num_processes):
-		p = Process(target = NoDeFofoca, args = (i + starting_port, value_array))
+		p = Process(target = NoDeFofoca, args = (i + starting_port, value_array, gossip_starting_time))
 		processes.append(p)
 		processes[i].start()
 
@@ -238,7 +237,7 @@ if __name__ == '__main__':
 	# number of attempts
 	print ("lowest number of attempts: %d" % get_lowest(value_array))
 	print ("highest number of attempts: %d" % get_highest(value_array))
-	print ("mean: %d" % get_mean(value_array))
+	print ("mean: %.3f" % get_mean(value_array))
 
 	# success rate
 	print ("success rate: %.2f" % calculate_success(value_array))
@@ -246,7 +245,7 @@ if __name__ == '__main__':
 	# total number of nodes with info
 	print ("%d of %d have the info" % (total_nodes_with_info(value_array), num_processes))
 
-	print ("total time: %d" % (final_time-initial_time))
+	print ("total time: %ds" % (final_time-gossip_starting_time.value))
 
 
 	print "what"

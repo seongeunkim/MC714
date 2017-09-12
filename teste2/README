@@ -1,0 +1,37 @@
+# Teste 02
+
+### Introdução
+Nesse teste, foi implementado em Python o algoritmo de disseminação de informação entre processos por gossiping utilizando sockets TCP/IP. Na implementação, foi utilizado o ZeroMQ como sistema de troca de mensagens.
+
+### Algoritmo
+Primeiramente, foi criada uma rede de processos que se conectam via sockets, a qual possui uma array de structures compartilhada entre seus nós para armazenar informações experimentais sobre cada processo. Em cada nó, rodam duas threads: uma do cliente, responsável em transmitir a informação; e outra do servidor, responsável por ouvir a informação. Foi usado o multithreading para que o cliente e o servidor pudessem funcionar sincronizadamente, pois as funções de comunicação - send() e recv() - bloqueiam a thread até retornarem.
+O cliente possui um loop de envio, no qual se ele possuir a informação, ele escolhe uma porta randomicamente para se conectar e enviar a mensagem. Se o processo recipiente já possuía a informação, o remetente para o processo de disseminação com probabilidade 1/k. Caso contrário, ele continua enviando mensagens para portas aleatórias. O servidor possui um loop que aguarda uma mensagem e faz o tratamento adequado para quando o nó já possuía ou não a informação. Ambos os loops possuíam um timeout após o início do processo de disseminação (após o último processo ser criado), dando tempo suficiente para que a maioria dos processos tenham recebido a mensagem e para que os servidores não fiquem esperando mensagens para sempre, depois que todos os remetentes tenham sido desativados. Ao final, os sockets são fechados, e é dado 100ms para que as mensagens ainda na memória sejam enviadas. Então, o contexto é fechado.
+
+
+### Testes
+Ao executar o algoritmo em OSx em um MacBook Pro com processador 2,7GHz Intel Core i5, pode-se rodar até 508 processos. Para números maiores do que esse, ocorre um erro do tipo "Too many files open", possivelmente por causa do limite de arquivos do sistema operacional.
+Como com um timeout de mais de 20 segundos, quase todos os processos ficam sabendo da informação para variados valores de _k_, ajustou-se o timeout para 12 segundos. Dessa forma, pode-se fazer uma análise dos dados coletados conforme _k_ varia.
+Resultados obtidos testando com 400 processos:
+
+| k | 2 | 4 | 6 | 8 |
+| ------ | ------ | ------ | ------ | ------ |
+| Mínimo de tentativas | 0 | 0 | 0 | 0 |
+| Máximo de tentativas | 6 | 7 | 6 | 6 |
+| Média de tentativas | 2.410 | 3.042 | 2.998 | 3.312 |
+| Parcela de sucesso | 38% | 32% | 32% | 29% |
+| Processos com informação | 368 | 387 | 380 | 389 |
+| Tempo | 22s | 22s | 22s | 22s |
+
+
+
+| ![alt](/Users/seongeunkim/Dropbox (Personal)/MC714/teste1) |
+|:--:|
+| *Gráfico do número de threads/processos pelo tempo de processamento em segundos* |
+
+### Análise
+Com os valores obtidos na execução do programa, pudemos comparar o tempo real de processamento e ver que a versão multiprocesso possui maior desempenho, seguida pela versão multithread e, por fim, a versão sequencial.
+
+Pelo gráfico, podemos observar que quanto o maior número de processos e threads (_k_), menor o tempo de execução, pois o problema é altamente paralelizável. Vemos, também, que há uma maior queda no tempo de processamento de _k=2_ para _k=4_ em relação às demais variações de _k_. Isso se deve possivelmente pois há uma queda de eficiência na troca dentro dos processadores lógicos.
+
+### Conclusão
+Nesse primeiro trabalho foi possível estudar a pertinência do uso de multithreads e multiprocessadores em algoritmos, pois observou-se melhor desempenho na sua execução em relaçao à versão sequencial.
